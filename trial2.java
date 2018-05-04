@@ -5,10 +5,22 @@ import javafx.scene.Scene;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-
-
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 import javax.swing.ImageIcon;
-
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
@@ -22,16 +34,49 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+
+
 public class trial2 extends Application{
-	Double[] num = new Double[4];
-	// private ImageView imageView;
-	static Timer tim;
+	Text text = new Text();
+	Timeline timeline;
+	int mins = 0, secs = 0, millis = 0;
+	boolean sos = true;
+	
+
+	 public static void main(String[] args) {
+	        Application.launch(args);
+	    }
+	
+	void change(Text text) {
+		if(millis == 1000) {
+			secs++;
+			millis = 0;
+		}
+		if(secs == 60) {
+			mins++;
+			secs = 0;
+		}
+		text.setText((((mins/10) == 0) ? "0" : "") + mins + ":"
+		 + (((secs/10) == 0) ? "0" : "") + secs + ":" 
+			+ (((millis/10) == 0) ? "00" : (((millis/100) == 0) ? "0" : "")) + millis++);
+    }
+
+	
+
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		
 		
-	//	Timer tim = new Timer(1000,1000);
+	
+		timeline = new Timeline(new KeyFrame(Duration.millis(1), new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+            change(text);
+			}
+		}));
+		timeline.setCycleCount(Timeline.INDEFINITE);
+		timeline.setAutoReverse(false);
 	 
 		
 	
@@ -67,7 +112,7 @@ public class trial2 extends Application{
 		 Label expressionLbl = new Label("Expression: ");
 	     Button verifyBtn = new Button("Verify");
 	     TextField AnswerTxt = new TextField(" ");
-	     TextField Time = new TextField("0:0:0");
+	     //TextField Time = new TextField("0:0:0");
 	    // Text T1 = new Text();
 	     Text T2 = new Text();
 	     Text T3 = new Text();
@@ -92,8 +137,8 @@ public class trial2 extends Application{
 	     grid.getChildren().add(verifyBtn);
 	     GridPane.setConstraints(AnswerTxt, 9, 17);
 	     grid.getChildren().add(AnswerTxt);
-	     GridPane.setConstraints(Time, 2, 15);
-	     grid.getChildren().add(Time);
+	     GridPane.setConstraints(text, 2, 15);
+	     grid.getChildren().add(text);
 	     
 	     pic1.setFitWidth(130);
 		pic1.setFitHeight(130);
@@ -120,58 +165,52 @@ public class trial2 extends Application{
 	     
 		
 		//	pic.setImage(img);
+		
 		verifyBtn.setOnMouseClicked(action -> {
+			timeline.pause();
+String expression = AnswerTxt.getText();
 			
-		TimerTask timerTask = new TimerTask() {
-
-            @Override
-            public void run() {
+			try {
+				double expressionResult = PostFixNotation.safeInfixEvaluation(expression);
+				
+				if(expressionResult == 24) {
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setHeaderText("24 Card Game");
+					String s = "You won !! " + expression + " = 24";
+					alert.setContentText(s);
+					alert.show();
+				}
+				else {
+					Alert error = new Alert(AlertType.ERROR);
+					error.setHeaderText("24 Card Game");
+					String s1 = "Sorry your answer is not equal to 24";
+					error.setContentText(s1);
+					error.showAndWait();
+					timeline.play();
+					
+				}
+			} catch (RuntimeException ex) {
                 
+                System.out.println(ex.getMessage());
             }
-        };
-        tim.cancel();
-        tim = new Timer();
-        tim.scheduleAtFixedRate(timerTask, 1000, 100);
-			
-			
 			
 		});
 		
 		
 shuffleBtn.setOnMouseClicked(action -> {
 	
+	text.setText("00:00:000");
 	
-	tim = new Timer();
-	TimerTask  tas = new TimerTask() {
-		int milisec = 0;
-		  int sec=0;
-		 int min=0;
-		 int hour=0;
-		
-		public void run() {
-			milisec++;
-			if(milisec>10)	{
-		    	milisec=0;
-		    	sec++;
-		    }
-		    if(sec>60)	{
-		    	milisec=0;
-		    	sec=0;
-		    	min++;
-		    }
-		    if(min>60)	{
-		    	milisec=0;
-		    	sec=0;
-		    	min=0;
-		    	hour++;
-		    }
-		    
-		    Time.setText( hour + " : " + min + " : " + sec  );
-		    
-		}
-		
-	}; 
-	tim.scheduleAtFixedRate(tas, 1000, 100);
+	mins = 0;
+	secs = 0;
+	millis = 0;
+      	
+      		timeline.play();
+      		
+      		
+      
+      		
+      		
 	
 	
 
@@ -183,10 +222,6 @@ shuffleBtn.setOnMouseClicked(action -> {
 	int num2 = generator2.nextInt(13) + 1;
 	int num3 = generator3.nextInt(13) + 1;
 	int num4 = generator4.nextInt(13) + 1;
-	//T1.setText("rand:  " + num1);
-	//T2.setText("rand:   " + num2);
-	//T3.setText("rand:   " + num3);
-	//T4.setText("rand:   " + num4);
 	
 	
 		switch (num1) {
@@ -462,7 +497,4 @@ shuffleBtn.setOnMouseClicked(action -> {
 	}
 	
 
-	 public static void main(String[] args) {
-	        Application.launch(args);
-	    }
 }
