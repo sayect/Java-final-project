@@ -2,6 +2,9 @@ import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.*;
+import java.io.*;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,21 +30,25 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 
 public class trial2 extends Application{
+	
+	
+	
+	
 	Text text = new Text();
 	Timeline timeline;
-	int mins = 0, secs = 0, millis = 0;
+	int mins = 0, secs = 0, millis = 0, hour =0;
+	int num1=1,num2=1, num3=1,num4=1;
 	boolean sos = true;
-	
+	String ans = new String();
+	String expression = new String();
 
 	 public static void main(String[] args) {
 	        Application.launch(args);
@@ -56,9 +63,14 @@ public class trial2 extends Application{
 			mins++;
 			secs = 0;
 		}
+		if(mins == 60) {
+			mins = 0;
+			hour++;
+		}
+		
 		text.setText((((mins/10) == 0) ? "0" : "") + mins + ":"
-		 + (((secs/10) == 0) ? "0" : "") + secs + ":" 
-			+ (((millis/10) == 0) ? "00" : (((millis/100) == 0) ? "0" : "")) + millis++);
+		+ (((secs/10) == 0) ? "0" : "") + secs + ":" +
+		(((millis/10) == 0) ? "0" : "") + millis++);
     }
 
 	
@@ -68,8 +80,9 @@ public class trial2 extends Application{
 	public void start(Stage primaryStage) throws Exception {
 		
 		
+	  
 	
-		timeline = new Timeline(new KeyFrame(Duration.millis(1), new EventHandler<ActionEvent>() {
+		timeline = new Timeline(new KeyFrame(Duration.millis(1000), new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
             change(text);
@@ -106,6 +119,12 @@ public class trial2 extends Application{
 		 Random generator3 = new Random();
 		 Random generator4 = new Random();
 		 
+		 
+		 ToolBar toolBar = new ToolBar();
+		 Button Save = new Button("Save");
+		
+		 Button Close = new Button("Close");
+		 Button Help = new Button("Help");
          Button shuffleBtn = new Button("Shuffle");
 		 Button solutionBtn = new Button("Solution");
 		 TextField solutionTxt = new TextField(" ");
@@ -124,7 +143,12 @@ public class trial2 extends Application{
 			grid.setPadding(new Insets (20,20,20,20));
 			grid.setVgap(10);
 			grid.setHgap(10);
-	     
+			toolBar.getItems().add(Save);
+		
+			toolBar.getItems().add(Close);
+			toolBar.getItems().add(Help);
+
+			grid.getChildren().add(toolBar);
 	     GridPane.setConstraints(shuffleBtn, 2, 1);
 	     grid.getChildren().add(shuffleBtn);
 	     GridPane.setConstraints(solutionBtn, 18, 1);
@@ -164,11 +188,14 @@ public class trial2 extends Application{
 	         
 	     
 		
-		//	pic.setImage(img);
+		
+		
 		
 		verifyBtn.setOnMouseClicked(action -> {
 			timeline.pause();
-String expression = AnswerTxt.getText();
+			
+expression = AnswerTxt.getText();
+
 			
 			try {
 				double expressionResult = PostFixNotation.safeInfixEvaluation(expression);
@@ -199,12 +226,9 @@ String expression = AnswerTxt.getText();
 		
 shuffleBtn.setOnMouseClicked(action -> {
 	
-	text.setText("00:00:000");
 	
-	mins = 0;
-	secs = 0;
-	millis = 0;
-      	
+	
+	
       		timeline.play();
       		
       		
@@ -218,10 +242,16 @@ shuffleBtn.setOnMouseClicked(action -> {
 	grid.getChildren().remove(pic2);
 	grid.getChildren().remove(pic3);
 	grid.getChildren().remove(pic4);
-	int num1 = generator1.nextInt(13) + 1;
-	int num2 = generator2.nextInt(13) + 1;
-	int num3 = generator3.nextInt(13) + 1;
-	int num4 = generator4.nextInt(13) + 1;
+	num1 = generator1.nextInt(13) + 1;
+	 num2 = generator2.nextInt(13) + 1;
+	 num3 = generator3.nextInt(13) + 1;
+	 num4 = generator4.nextInt(13) + 1;
+	
+	
+	
+        	
+        	
+	
 	
 	
 		switch (num1) {
@@ -475,16 +505,47 @@ shuffleBtn.setOnMouseClicked(action -> {
        
        });
 
+Close.setOnMouseClicked(action -> {
+	timeline.pause();
+	System.exit(1);
+});
 
 
+
+Help.setOnMouseClicked(action -> {
+	Alert alert = new Alert(AlertType.INFORMATION);
+	alert.setHeaderText("Game Rules");
+	String s = "Can you write some rules here to cover our tracks in which "
+			+ "certain things might not work.";
+	alert.setContentText(s);
+	alert.show();
 	
-    
-	
-        	
-        	
+});
+
      
         
-       
+Save.setOnMouseClicked(action -> {
+	int t= 0;
+	ans = "           NEW GAME      /n   "
+			+" Time Taken: " + text.getText() + "Cards Used :  "
+			+ Integer.toString(num1) + "  "
+					+ Integer.toString(num2) + "  "
+							+ Integer.toString(num3) + "  "
+									+ Integer.toString(num4) + "  "
+			+ "Expression :    " + expression+  "      ";
+
+	
+	try {
+		
+	    PrintWriter outFile = new PrintWriter("/Users/chris/Desktop/card game 2/src/logFile.txt");
+	    outFile.print(ans );
+	    outFile.close();
+		}
+		catch (IOException x) {
+		      System.err.println("hfgv");
+		    }
+		
+});
 
 		
 		Scene sn = new Scene (grid, 1000,500);  //adds the grid to the scene
